@@ -1,0 +1,64 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    container_name: microblog-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/app
+      - ./alembic.ini:/app/alembic.ini
+      - ./alembic:/app/alembic
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db   # Ждем запуска базы данных
+      - redis # Ждем запуска Redis
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Сервис 2: База данных PostgreSQL
+  db:
+    image: postgres:15-alpine  # Используем готовый образ
+    container_name: microblog-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      # Сохраняем данные БД на хосте (чтобы не потерять при перезапуске)
+      - postgres_data:/var/lib/postgresql/data
+      # Можно монтировать SQL скрипты для инициализации
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"  # Для подключения извне (DBeaver, pgAdmin)
+
+  redis:
+    image: redis:7-alpine
+    container_name: microblog-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: microblog-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+volumes:
+  postgres_data:
+  redis_data:
+  pgadmin_data:
