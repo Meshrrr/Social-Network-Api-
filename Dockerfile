@@ -14,6 +14,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
+COPY certs/ ./certs/
 COPY . .
 
 # Создаем пользователя для безопасности (не запускаем от root)

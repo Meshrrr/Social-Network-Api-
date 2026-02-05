@@ -10,7 +10,7 @@ DATABASE_URL = os.getenv(
 engine = create_async_engine("DATABASE_URL", "postgresql+asyncpg://postgres:strongpassword123@db:5432/microblog"
                              )
 
-AsyncsessionLocal = async_sessionmaker(engine,
+AsyncSessionLocal = async_sessionmaker(engine,
                                        class_=AsyncSession,
                                        expire_on_commit=False)
 
