@@ -1,15 +1,15 @@
 from pathlib import Path
 import bcrypt
 import jwt
-from fastapi import FastAPI, APIRouter, Depends
+from fastapi import FastAPI, APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from rsa import key
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database import get_db
-from models import User
+from app.database import get_db
+from app.models import User
 
-from schemas import (
+from app.schemas import (
 createUser,
 UserLogin,
 UserUpdate,
@@ -31,7 +31,7 @@ def encode_jwt(
         private_key: str = auth_jwt.private_key_path.read_text(),
         algorithm: str = auth_jwt.algorithm,
 ):
-    encoded = jwt.encode(payload, key, algorithm=algorithm)
+    encoded = jwt.encode(payload, private_key, algorithm=algorithm)
     return encoded
 
 def decode_jwt(
@@ -42,17 +42,18 @@ def decode_jwt(
     decoded = jwt.decode(token, public_key, algorithms=[algorithm])
     return decoded
 
-def hash_password(password: str) -> bytes:
+def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
     pwd_bytes: bytes = password.encode()
-    return bcrypt.hashpw(pwd_bytes, salt)
+    hashed_bytes =  bcrypt.hashpw(pwd_bytes, salt)
+    return hashed_bytes.decode("utf-8")
 
 def valid_password(
         password: str,
-        hashed_password: bytes,
+        hashed_password: str,
 ) -> bool:
     return bcrypt.checkpw(password=password.encode(),
-                          hashed_password=hashed_password)
+                          hashed_password=hashed_password.encode("utf-8"))
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -85,8 +86,31 @@ async def register(
     return TokenResponse(access_token=access_token,
                          token_type="bearer",)
 
-@router.post("/login/")
-async def login():
-    pass
+@router.post("/login/", response_model=TokenResponse)
+async def login(user_login: UserLogin, db: AsyncSession = Depends(get_db)):
 
+    result = await db.execute(
+        select(User).where(User.username == user_login.username)
+    )
 
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Неверное имя Пользователя или пароль!")
+
+    if not valid_password(user_login.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail='Неверное имя Пользователя или пароль!')
+
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail='Аккаунт деактивирован')
+
+    token_payload = {
+        "sub": str(user.id),
+        "email": user.email,
+        "username": user.username,
+    }
+
+    access_token = encode_jwt(token_payload)
+
+    return TokenResponse(access_token=access_token,
+                         token_type="bearer")
