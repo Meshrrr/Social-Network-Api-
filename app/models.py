@@ -1,16 +1,14 @@
-from typing import Optional
-
 from sqlalchemy import Integer, Column, String, ForeignKey, DateTime, Text, Boolean
-from typing import Optional
 from app.database import Base
 
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
-    fullname = Column(String)
-    username = Column(String)
+    username = Column(String, nullable=False)
+    hashed_password = Column(String, nullable=False)
     email = Column(String)
+    full_name = Column(String)
     bio= Column(String, default="")
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True))
