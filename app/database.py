@@ -4,11 +4,10 @@ import os
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+asyncpg://postgres:strongpassword123@db:5432/microblog"
+    "postgresql+asyncpg://postgres:strongpassword123@db:5432/microblog",
 )
 
-engine = create_async_engine("DATABASE_URL", "postgresql+asyncpg://postgres:strongpassword123@db:5432/microblog"
-                             )
+engine = create_async_engine(DATABASE_URL,)
 
 AsyncSessionLocal = async_sessionmaker(engine,
                                        class_=AsyncSession,
@@ -16,6 +15,11 @@ AsyncSessionLocal = async_sessionmaker(engine,
 
 class Base(DeclarativeBase):
     pass
+
+async def create_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
 
 async def get_db() -> AsyncSession:
     async with AsyncSessionLocal() as session:
