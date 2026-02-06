@@ -5,7 +5,7 @@ import jwt
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, Form, status
 from fastapi.security import HTTPBearer
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import select, Select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -126,6 +126,21 @@ async def login(user_login: UserLogin, db: AsyncSession = Depends(get_db)):
     return TokenResponse(access_token=access_token,
                          token_type="bearer")
 
-@router.post("/me/", response_model=UserResponse)
-def get_current_auth_user():
-    pass
+@router.get("/me/", response_model=UserResponse)
+async def user_check_self(access_token: str, db: AsyncSession = Depends(get_db)):
+    payload = decode_jwt(access_token)
+
+    user_id = int(payload["sub"])
+
+    result = await db.execute(Select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Профиль недоступен")
+
+
+
+    return UserResponse(username=user.username,
+                        email=user.email,
+                        bio=user.bio,
+                        full_name=user.full_name,)
