@@ -1,7 +1,9 @@
+from datetime import datetime, timedelta
 from pathlib import Path
 import bcrypt
 import jwt
-from fastapi import FastAPI, APIRouter, Depends, HTTPException
+from fastapi import FastAPI, APIRouter, Depends, HTTPException, Form, status
+from fastapi.security import HTTPBearer
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,15 +25,24 @@ class AuthJWT(BaseModel):
     private_key_path: Path = BASE_DIR / "certs" / "jwt-private.pem"
     public_key_path: Path = BASE_DIR / "certs" / "jwt-public.pem"
     algorithm: str = "RS256"
+    TOKEN_EXPIRES_MINUTES: int = 30
 
 auth_jwt = AuthJWT()
+
+http_bearer = HTTPBearer()
 
 def encode_jwt(
         payload: dict,
         private_key: str = auth_jwt.private_key_path.read_text(),
         algorithm: str = auth_jwt.algorithm,
+        exp_minutes: int = auth_jwt.TOKEN_EXPIRES_MINUTES,
 ):
-    encoded = jwt.encode(payload, private_key, algorithm=algorithm)
+    to_encode = payload.copy()
+    now = datetime.utcnow()
+    expire = now + timedelta(minutes=exp_minutes)
+    to_encode.update(exp=expire,
+                     iat=now,)
+    encoded = jwt.encode(to_encode, private_key, algorithm=algorithm)
     return encoded
 
 def decode_jwt(
@@ -96,13 +107,13 @@ async def login(user_login: UserLogin, db: AsyncSession = Depends(get_db)):
     user = result.scalar_one_or_none()
 
     if not user:
-        raise HTTPException(status_code=401, detail="Неверное имя Пользователя или пароль!")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверное имя Пользователя или пароль!")
 
     if not valid_password(user_login.password, user.hashed_password):
-        raise HTTPException(status_code=401, detail='Неверное имя Пользователя или пароль!')
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Неверное имя Пользователя или пароль!')
 
     if not user.is_active:
-        raise HTTPException(status_code=403, detail='Аккаунт деактивирован')
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Аккаунт деактивирован')
 
     token_payload = {
         "sub": str(user.id),
@@ -114,3 +125,7 @@ async def login(user_login: UserLogin, db: AsyncSession = Depends(get_db)):
 
     return TokenResponse(access_token=access_token,
                          token_type="bearer")
+
+@router.post("/me/", response_model=UserResponse)
+def get_current_auth_user():
+    pass
