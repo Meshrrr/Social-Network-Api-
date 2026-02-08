@@ -17,7 +17,7 @@ class UserResponse(BaseModel):
     full_name: Optional[str] = None
     email: EmailStr | None = None
     is_active: bool = True
-    created_at: datetime
+    created_at: Optional[datetime] = datetime.now()
 
 class UserLogin(BaseModel):
     username: str
