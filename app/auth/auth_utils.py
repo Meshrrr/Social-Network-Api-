@@ -74,14 +74,22 @@ async def register(
         user_data:createUser,
         db: AsyncSession = Depends(get_db),
 ):
-    hashed_pwd = hash_password(user_data.password)
+    email_check = await db.execute(select(User).where(User.email == user_data.email))
+    if email_check.scalar_one_or_none():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Пользователь с таким email уже есть")
 
+
+    username_check = await db.execute(select(User).where(User.username == user_data.username))
+    if username_check.scalar_one_or_none():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Пользователь с таким username уже существует")
+
+
+    hashed_pwd = hash_password(user_data.password)
     user = User(
         username=user_data.username,
         email=user_data.email,
         hashed_password=hashed_pwd,
     )
-
     db.add(user)
     await db.commit()
     await db.refresh(user)
