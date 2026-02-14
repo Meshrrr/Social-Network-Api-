@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, Field
 
 
 class createUser(BaseModel):
@@ -29,8 +29,7 @@ class TokenResponse(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    username: str
-    email: EmailStr
-    full_name: Optional[str] = None
-    bio: Optional[str] = None
-
+    username: Optional[str] = Field(None, description="Новый юзернейм пользователя")
+    email: Optional[EmailStr] = Field(None, description="Новый email пользователя")
+    full_name: Optional[str] = Field(None, description="Новое полное имя пользователя")
+    bio: Optional[str] = Field(None, description="Новое 'о себе' пользователя")
