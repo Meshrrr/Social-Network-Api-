@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Optional
+
 import bcrypt
 import jwt
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, Form, status
@@ -33,10 +35,12 @@ http_bearer = HTTPBearer()
 
 def encode_jwt(
         payload: dict,
-        private_key: str = auth_jwt.private_key_path.read_text(),
+        private_key: Optional[str] = None,
         algorithm: str = auth_jwt.algorithm,
         exp_minutes: int = auth_jwt.TOKEN_EXPIRES_MINUTES,
 ):
+    if private_key is None:
+        private_key = auth_jwt.private_key_path.read_text()
     to_encode = payload.copy()
     now = datetime.utcnow()
     expire = now + timedelta(minutes=exp_minutes)
@@ -47,9 +51,11 @@ def encode_jwt(
 
 def decode_jwt(
         token: str,
-        public_key: str = auth_jwt.public_key_path.read_text(),
+        public_key: Optional[str] = None,
         algorithm: str = auth_jwt.algorithm,
 ):
+    if public_key is None:
+        public_key = auth_jwt.public_key_path.read_text()
     decoded = jwt.decode(token, public_key, algorithms=[algorithm])
     return decoded
 
