@@ -33,3 +33,10 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = Field(None, description="Новый email пользователя")
     full_name: Optional[str] = Field(None, description="Новое полное имя пользователя")
     bio: Optional[str] = Field(None, description="Новое 'о себе' пользователя")
+
+class PasswordUpdate(BaseModel):
+    current_password: str = Field(description="Ваш текущий пароль")
+    new_passsword: str = Field(description="Ваш новый пароль", min_length=5, max_length=20)
+    confirm_passsword: str = Field(description="Подтвердите ваш новый пароль", min_length=5, max_length=20)
+
+
