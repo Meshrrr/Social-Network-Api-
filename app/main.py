@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 import os
-from auth.auth_utils import router as auth_router
+from auth.auth_utils import get_current_user
 from app.database import create_tables
 from app.database import get_db
 from sqlalchemy import select, Select
@@ -8,10 +8,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import User
 from app.schemas import UserResponse
 
+from auth.auth_utils import router as auth_router
+from users.user_utils import router as users_router
+
 app = FastAPI(title="Social API",
               version="0.1.0",)
 
 app.include_router(auth_router)
+app.include_router(users_router)
 
 @app.on_event("startup")
 async def on_startup():
@@ -22,17 +26,3 @@ async def on_startup():
 @app.get("/")
 async def health():
     return {"status": "ok"}
-
-@app.get("/users", response_model=list[UserResponse])
-async def get_users(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(Select(User))
-    users = result.scalars().all()
-
-    if users is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Пользователи отсутствуют")
-    else:
-        return users
-
-@app.get("/users/{user_id}")
-async def get_user(user_id: int):
-    return {"user_id": user_id}
