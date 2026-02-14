@@ -9,7 +9,7 @@ from app.models import User
 from app.schemas import UserResponse
 
 from auth.auth_utils import router as auth_router
-from users.user_utils import router as users_router
+from app.users.user_utils import router as users_router
 
 app = FastAPI(title="Social API",
               version="0.1.0",)

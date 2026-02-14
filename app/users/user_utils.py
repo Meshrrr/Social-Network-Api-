@@ -2,14 +2,14 @@ from fastapi import Depends, HTTPException, APIRouter, status
 from sqlalchemy import select, Select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import User
-from app.schemas import UserResponse,UserUpdate
-from auth.auth_utils import get_current_user
+from app.schemas import UserResponse,UserUpdate, PasswordUpdate
+from app.auth.auth_utils import get_current_user
 from app.database import Base, get_db
 
-router = APIRouter()
+router = APIRouter(prefix="/users", tags=["users"])
 
 
-@router.get("/users", response_model=list[UserResponse])
+@router.get("/", response_model=list[UserResponse])
 async def get_users(db: AsyncSession = Depends(get_db)):
     result = await db.execute(Select(User))
     users = result.scalars().all()
@@ -19,7 +19,7 @@ async def get_users(db: AsyncSession = Depends(get_db)):
     else:
         return users
 
-@router.get("/users/{user_id}")
+@router.get("/{user_id}/")
 async def get_user(user_id: int,
                    db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.id == user_id))
@@ -88,3 +88,7 @@ async def update_user(user_update: UserUpdate,
     await db.refresh(current_user)
 
     return current_user
+
+@router.put("/me/update/password", response_model=UserResponse)
+async def update_user_password(update_password: PasswordUpdate, db: AsyncSession = Depends(get_db)):
+    pass
