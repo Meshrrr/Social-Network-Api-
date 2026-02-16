@@ -3,7 +3,7 @@ from sqlalchemy import select, Select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import User
 from app.schemas import UserResponse,UserUpdate, PasswordUpdate
-from app.auth.auth_utils import get_current_user
+from app.auth.auth_utils import get_current_user, hash_password, valid_password
 from app.database import Base, get_db
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -35,7 +35,7 @@ async def update_user(user_update: UserUpdate,
 
     what_update = []
 
-    if user_update.username is not None:
+    if user_update.username is not None and not "String":
 
         if user_update.username != current_user.username:
 
@@ -48,10 +48,10 @@ async def update_user(user_update: UserUpdate,
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Этот юзернейм уже щзанят")
 
             current_user.username = user_update.username
-            what_update.apppend("username")
+            what_update.append("username")
 
 
-    if user_update.email is not None:
+    if user_update.email is not None or not "EmailStr":
 
         if user_update.email != current_user.email:
 
@@ -89,6 +89,35 @@ async def update_user(user_update: UserUpdate,
 
     return current_user
 
-@router.put("/me/update/password", response_model=UserResponse)
-async def update_user_password(update_password: PasswordUpdate, db: AsyncSession = Depends(get_db)):
-    pass
+@router.put("/me/update/password")
+async def update_user_password(update_password: PasswordUpdate,
+                               current_user: User = Depends(get_current_user),
+                               db: AsyncSession = Depends(get_db)):
+
+
+    if not valid_password(update_password.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail= "Текущий пароль указан неверно")
+
+    if update_password.new_password == update_password.current_password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Новый пароль должен отличаться от предыдущего")
+
+    if update_password.confirm_password != update_password.new_password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Новый пароль и подтверждение не совпадают")
+
+    if len(update_password.new_password) < 6:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Пароль должен содержать не менее 6 символов!")
+
+    hashed_pwd_new = hash_password(update_password.new_password)
+    current_user.hashed_password = hashed_pwd_new
+
+    await db.commit()
+    await db.refresh(current_user)
+
+    return {
+        "message": "Пароль обновлен успешно"
+    }
+
