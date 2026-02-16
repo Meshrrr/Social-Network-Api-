@@ -14,9 +14,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-COPY certs/ ./certs/
-COPY app/auth/ ./auth/
-COPY . .
+COPY app/ ./app/
+
 
 # Создаем пользователя для безопасности (не запускаем от root)
 RUN useradd -m -u 1000 user && chown -R user:user /app
