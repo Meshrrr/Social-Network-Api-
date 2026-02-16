@@ -36,7 +36,7 @@ class UserUpdate(BaseModel):
 
 class PasswordUpdate(BaseModel):
     current_password: str = Field(description="Ваш текущий пароль")
-    new_passsword: str = Field(description="Ваш новый пароль", min_length=5, max_length=20)
-    confirm_passsword: str = Field(description="Подтвердите ваш новый пароль", min_length=5, max_length=20)
+    new_password: str = Field(description="Ваш новый пароль", min_length=5, max_length=20)
+    confirm_password: str = Field(description="Подтвердите ваш новый пароль", min_length=5, max_length=20)
 
 
