@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 import os
-from auth.auth_utils import get_current_user
+from app.auth.auth_utils import get_current_user
 from app.database import create_tables
 from app.database import get_db
 from sqlalchemy import select, Select
@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import User
 from app.schemas import UserResponse
 
-from auth.auth_utils import router as auth_router
+from app.auth.auth_utils import router as auth_router
 from app.users.user_utils import router as users_router
 
 app = FastAPI(title="Social API",
