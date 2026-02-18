@@ -10,12 +10,15 @@ from app.schemas import UserResponse
 
 from app.auth.auth_utils import router as auth_router
 from app.users.user_utils import router as users_router
+from app.posts.posts import router as posts_router
+
 
 app = FastAPI(title="Social API",
               version="0.1.0",)
 
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(posts_router)
 
 @app.on_event("startup")
 async def on_startup():
