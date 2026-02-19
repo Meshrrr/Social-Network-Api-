@@ -44,13 +44,13 @@ class PasswordUpdate(BaseModel):
 
 #POSTS
 
-class Post(BaseModel):
+class PostBase(BaseModel):
     body: str = Field(description="Тело поста", min_length=5, max_length=280)
-    image_url: Optional[str] = Field(description="url прикрепленного изображения")
+    image_url: Optional[str] = Field(None, description="url прикрепленного изображения")
 
 class PostUpdate(BaseModel):
     body: Optional[str] = Field(description="Тело поста", min_length=5, max_length=280)
-    image_url: Optional[str] = Field(description="url прикрепленного изображения")
+    image_url: Optional[str] = Field(None, description="url прикрепленного изображения")
 
 
 class UserShortInfo(BaseModel):
@@ -60,7 +60,7 @@ class UserShortInfo(BaseModel):
     avatar_url: Optional[str] = None
 
 
-class PostResponse(Post):
+class PostResponse(PostBase):
     id: int = Field(..., description="ID поста")
     user_id: int = Field(..., description="ID автора")
     created_at: datetime = Field(..., description="Дата создания")
