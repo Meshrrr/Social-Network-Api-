@@ -15,6 +15,8 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True))
 
+    posts = relationship("Post", back_populates="user")
+
 
 class Post(Base):
     __tablename__ = "posts"
@@ -25,6 +27,6 @@ class Post(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime, default=func.now())
 
-    user = relationship("User", backref="posts")
+    user = relationship("User", back_populates="posts")
 
 
