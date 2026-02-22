@@ -4,7 +4,7 @@ from sqlalchemy import select, Select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models import Post, User
-from app.schemas import PostBase, PostUpdate, PostResponse, UserShortInfo
+from app.schemas.post_schemas import PostBase, PostUpdate, PostResponse, UserShortInfo
 from app.auth.auth_utils import get_current_user
 
 

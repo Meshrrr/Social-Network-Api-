@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models import User
 
-from app.schemas import (
+from app.schemas.user_schemas import (
 createUser,
 UserLogin,
 UserUpdate,
