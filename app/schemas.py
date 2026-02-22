@@ -70,3 +70,25 @@ class PostResponse(PostBase):
     comments_count: int = Field(0, description="Количество комментариев")
     is_liked: bool = Field(False, description="Лайкнул ли текущий пользователь")
     is_owner: bool = Field(False, description="Является ли текущий пользователь автором")
+
+
+#LIKES
+
+class LikeUserShortInfo(BaseModel):
+    id: int
+    username: str
+    full_name: Optional[str] = None
+
+
+class LikeResponse(BaseModel):
+    id: int
+    user_id: int
+    post_id: int
+    created_at: datetime
+    user: LikeUserShortInfo
+
+class LikeAction(BaseModel):
+    post_id: int
+    likes_count: int
+    is_liked: bool
+
