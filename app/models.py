@@ -16,6 +16,7 @@ class User(Base):
     created_at = Column(DateTime(timezone=True))
 
     posts = relationship("Post", back_populates="user")
+    likes = relationship("Like", back_populates="user")
 
 
 class Post(Base):
@@ -28,7 +29,7 @@ class Post(Base):
     created_at = Column(DateTime, default=func.now())
 
     user = relationship("User", back_populates="posts")
-    like = relationship("Like", back_populates="posts")
+    likes = relationship("Like", back_populates="post")
 
 
 class Like(Base):
@@ -39,5 +40,5 @@ class Like(Base):
     post_id = Column(Integer, ForeignKey("posts.id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now()) # !!
 
-    user = relationship("User",backref="likes")
-    post =relationship("Post", backref="likes")
+    user = relationship("User",back_populates="likes")
+    post =relationship("Post", back_populates="likes")
