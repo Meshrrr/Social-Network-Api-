@@ -124,3 +124,25 @@ async def update_user_password(update_password: PasswordUpdate,
         "message": "Пароль обновлен успешно"
     }
 
+@router.delete("/me/delete/")
+async def delete_account(delete_account: bool,
+                         current_user: User = Depends(get_current_user),
+                         db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(User).where(User.id == current_user.id))
+    delete_user = result.scalar_one_or_none()
+
+
+    if not delete_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Вы не авторизованы")
+
+
+    if delete_account:
+        await db.delete(delete_user)
+        await db.commit()
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Можете вернуться на прошлую страницу")
+
+
+    return {
+        "message": "Ваш аккаунт успешно удален"
+    }
