@@ -19,14 +19,17 @@ async def get_users(db: AsyncSession = Depends(get_db)):
     else:
         return users
 
-@router.get("/{user_id}/")
+@router.get("/{user_id}/", response_model=UserResponse)
 async def get_user(user_id: int,
                    db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.id == user_id))
 
     user_result = result.scalar_one_or_none()
-    if user_result is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: '{user_id}' not found")
+    if not user_result:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Пользователь с id: '{user_id}' не найден")
+
+    return user_result
 
 @router.patch("/me/update/", response_model=UserResponse)
 async def update_user(user_update: UserUpdate,
