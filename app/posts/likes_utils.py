@@ -1,10 +1,12 @@
+from typing import List
+
 from fastapi import APIRouter, HTTPException, Depends, status
 from mako.testing.helpers import result_raw_lines
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from app.schemas.likes_schemas import LikeAction
+from app.schemas.likes_schemas import LikeAction, LikeResponse
 from app.models import User, Post, Like
 from app.database import get_db
 from app.auth.auth_utils import get_current_user
@@ -19,7 +21,8 @@ async def toggle_like(post_id: int,
 
     current_post = result.scalar_one_or_none()
     if not current_post:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Такого поста не существует")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Такого поста не существует")
 
 
     result_is_liked = await db.execute(select(Like).where(
@@ -54,7 +57,7 @@ async def toggle_like(post_id: int,
     )
 
 
-@router.get("/{post_id}/likes/")
+@router.get("/{post_id}/likes/", response_model=List[LikeResponse])
 async def get_likes(post_id: int,
                     skip: int = 0,
                     limit: int = 100,
@@ -73,7 +76,10 @@ async def get_likes(post_id: int,
                                     .offset(skip)
                                     .limit(limit))
 
-    all_likes = result.scalars().all()
+    all_likes = result_users.scalars().all()
+    if not all_likes:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="На этом посте нет лайков! Поставьте первый!")
 
     return all_likes
 
