@@ -2,15 +2,16 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from mako.testing.helpers import result_raw_lines
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
-from app.schemas.likes_schemas import LikeUserShortInfo, LikeAction, LikeResponse
+from app.schemas.likes_schemas import LikeAction
 from app.models import User, Post, Like
 from app.database import get_db
 from app.auth.auth_utils import get_current_user
 
 router = APIRouter(prefix="/posts", tags=["likes"])
 
-router.post("/{post_id}/like", response_model=LikeAction)
+@router.post("/{post_id}/like", response_model=LikeAction)
 async def toggle_like(post_id: int,
                       current_user: User = Depends(get_current_user),
                       db: AsyncSession = Depends(get_db)):
@@ -51,4 +52,28 @@ async def toggle_like(post_id: int,
         likes_count=likes_count,
         is_liked=is_liked,
     )
+
+
+@router.get("/{post_id}/likes/")
+async def get_likes(post_id: int,
+                    skip: int = 0,
+                    limit: int = 100,
+                    db: AsyncSession = Depends(get_db)):
+
+    result = await db.execute(select(Post).where(Post.id == post_id))
+
+    current_post = result.scalar_one_or_none()
+    if not current_post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Такого поста не существует")
+
+    result_users = await db.execute(select(Like)
+                                    .where(Like.post_id == post_id)
+                                    .options(joinedload(Like.user))
+                                    .order_by(Like.created_at.desc())
+                                    .offset(skip)
+                                    .limit(limit))
+
+    all_likes = result.scalars().all()
+
+    return all_likes
 
