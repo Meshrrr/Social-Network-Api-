@@ -125,22 +125,28 @@ async def get_user_posts(user_id: int,
 
 
 @router.delete('/{post_id}/delete')
-async def delete_post(post_id: int,
+async def delete_post(delete_post: bool,
+                      post_id: int,
                       current_user: User = Depends(get_current_user),
                       db: AsyncSession = Depends(get_db)):
-    result = await (db
-                    .execute(select(Post)
-                              .where(Post.id == post_id,
-                                                 Post.user_id == current_user.id)))
+    if delete_post:
+        result = await (db
+                        .execute(select(Post)
+                                  .where(Post.id == post_id,
+                                                     Post.user_id == current_user.id)))
 
-    current_post = result.scalar_one_or_none()
+        current_post = result.scalar_one_or_none()
 
-    if not current_post:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Такого поста нет")
+        if not current_post:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail="Такого поста нет")
 
-    await db.delete(current_post)
-    await db.commit()
+        await db.delete(current_post)
+        await db.commit()
 
-    return {
-        "message": "Пост удален"
-    }
+        return {
+            "message": "Пост удален"
+        }
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Можете вернуться на прошлую страницу")
