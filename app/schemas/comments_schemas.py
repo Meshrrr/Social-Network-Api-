@@ -16,3 +16,5 @@ class CommentsResponse(BaseModel):
 
     is_owner: bool
 
+class CommentCreate(CommentsBase):
+    parent_id: Optional[int] = None
