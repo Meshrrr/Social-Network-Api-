@@ -12,15 +12,17 @@ from app.auth.auth_utils import router as auth_router
 from app.users.user_utils import router as users_router
 from app.posts.posts import router as posts_router
 from app.posts.likes_utils import router as likes_router
+from app.posts.comments_utils import router as comments_router
 
 
 app = FastAPI(title="Social API",
-              version="0.1.0",)
+              version="1.0.0",)
 
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(posts_router)
 app.include_router(likes_router)
+app.include_router(comments_router)
 
 @app.on_event("startup")
 async def on_startup():
