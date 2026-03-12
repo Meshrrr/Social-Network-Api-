@@ -1,7 +1,10 @@
+from typing import Optional
+
 from fastapi import HTTPException, APIRouter, Depends, status
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models import Post, User, Comments
@@ -42,7 +45,31 @@ async def create_comment(content: CommentCreate,
 
     return comment
 
-#сделать получения коммента по айди(с ответами), апдейт коммента
+@router.get("/comments/{comment_id}", response_model=CommentsResponse)
+async def get_comment_by_id(comment_id: int,
+                            current_user: Optional[User] = Depends(get_current_user),
+                            db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Comments)
+                              .where(Comments.id == comment_id)
+                              .options(selectinload(Comments.user), selectinload(Comments.replies).selectinload(Comments.user)))
+
+    current_comment = result.scalar_one_or_none()
+
+    if not current_comment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Комментарий с таким id не найден")
+
+    current_comment.is_owner = current_user and current_user.id == current_comment.user_ids
+
+    for reply in current_comment.replies:
+        reply.is_owner = current_user and current_user.id == reply.user_id
+
+
+    current_comment.replies_count = len(current_comment.replies)
+
+    return current_comment
+
+
+#сделать получения коммента по айди(с ответами), апдейт коммента(через patch)
 
 @router.post("/comments/{comment_id}")
 async def delete_comment(comment_id: int,
