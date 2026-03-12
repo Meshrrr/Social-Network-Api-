@@ -8,7 +8,7 @@ class CommentsBase(BaseModel):
     id: int
     content:str
 
-class CommentsResponse(BaseModel):
+class CommentsResponse(CommentsBase):
     user: UserShortInfo
     post_id: int
     created_at: datetime
@@ -18,3 +18,8 @@ class CommentsResponse(BaseModel):
 
 class CommentCreate(CommentsBase):
     parent_id: Optional[int] = None
+
+
+class CommentResponseWithReplies(CommentsResponse):
+    replies: list[CommentsResponse]
+
