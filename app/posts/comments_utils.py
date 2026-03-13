@@ -68,6 +68,30 @@ async def get_comment_by_id(comment_id: int,
 
     return current_comment
 
+@router.patch("/comments/{comment_id}", response_model= CommentsResponse)
+async def update_comment(comment_id: int,
+                         content: str,
+                         current_user: User = Depends(get_current_user),
+                         db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Comments).where(Comments.id == comment_id))
+
+    current_comment = result.scalar_one_or_none()
+
+    if not current_comment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Комментарий с таким id не найден")
+
+    if current_user.id != current_comment.user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Вы не можете редактировать чужой комментарий")
+
+    current_comment.content = content
+
+    await db.commit()
+    await db.refresh(current_comment)
+
+    return current_comment
+
+
+
 
 #сделать получения коммента по айди(с ответами), апдейт коммента(через patch)
 
