@@ -4,9 +4,14 @@ from typing import Optional
 from pydantic import BaseModel
 from app.schemas.post_schemas import UserShortInfo
 
-class CommentsBase(BaseModel):
+
+class CommentCreate(BaseModel):
+    content: str
+    parent_id: Optional[int]
+
+class CommentsBase(CommentCreate):
     id: int
-    content:str
+
 
 class CommentsResponse(CommentsBase):
     user: UserShortInfo
@@ -15,9 +20,6 @@ class CommentsResponse(CommentsBase):
     parent_id: Optional[int] = None
 
     is_owner: bool
-
-class CommentCreate(CommentsBase):
-    parent_id: Optional[int] = None
 
 
 class CommentResponseWithReplies(CommentsResponse):
