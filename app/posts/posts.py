@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.database import get_db
-from app.models import Post, User, Like
+from app.models import Post, User, Like, Comments
 from app.schemas.post_schemas import PostBase, PostResponse
 from app.auth.auth_utils import get_current_user
 
@@ -75,6 +75,13 @@ async def get_post(post_id: int,
         post.is_liked = False
 
 
+    result_comments = await db.execute(select(func.count(Comments.id))
+                                       .where(Comments.post_id == post_id))
+
+    comments = result_comments.scalar()
+
+    post.comments_count = comments
+#dodelat
     return post
 
 
@@ -120,6 +127,8 @@ async def get_user_posts(user_id: int,
             post.is_liked = result.scalar_one_or_none() is not None
         else:
             post.is_liked = False
+
+    posts.total_posts = total_posts
 
     return posts
 
