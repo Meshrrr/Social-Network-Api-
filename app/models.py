@@ -65,13 +65,13 @@ class Comments(Base):
     post = relationship("Post", back_populates="comments")
 
     parent = relationship(
-        "Comment",
+        "Comments",
         back_populates="replies",
         remote_side=[id],
     )
 
     # Ответы на этот комментарий
     replies = relationship(
-        "Comment",
+        "Comments",
         back_populates="parent",
     )
