@@ -104,7 +104,7 @@ async def update_comment(comment_id: int,
 
 
 
-#сделать получения коммента по айди(с ответами), апдейт коммента(через patch)
+#проверить почему не показывает кол-во ответов на коммент
 
 @router.delete("/comments/{comment_id}")
 async def delete_comment(comment_id: int,
