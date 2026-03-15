@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models import Post, User, Comments
-from app.schemas.comments_schemas import CommentsBase, CommentsResponse, CommentCreate
+from app.schemas.comments_schemas import CommentsResponse, CommentCreate
 from app.auth.auth_utils import get_current_user
 
 router = APIRouter(prefix="/posts", tags=["comments"])
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/posts", tags=["comments"])
 async def create_comment(content: CommentCreate,
                          post_id: int,
                          user: User = Depends(get_current_user),
-                         db: AsyncSession = Depends(get_db())):
+                         db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Post).where(Post.id == post_id))
     current_post = result.scalar_one_or_none()
 
@@ -43,6 +43,15 @@ async def create_comment(content: CommentCreate,
     await db.commit()
     await db.refresh(comment)
 
+    result = await db.execute(
+        select(Comments)
+        .where(Comments.id == comment.id)
+        .options(selectinload(Comments.user))
+    )
+    comment = result.scalar_one()
+
+    comment.is_owner = True
+
     return comment
 
 @router.get("/comments/{comment_id}", response_model=CommentsResponse)
@@ -58,7 +67,7 @@ async def get_comment_by_id(comment_id: int,
     if not current_comment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Комментарий с таким id не найден")
 
-    current_comment.is_owner = current_user and current_user.id == current_comment.user_ids
+    current_comment.is_owner = current_user and current_user.id == current_comment.user_id
 
     for reply in current_comment.replies:
         reply.is_owner = current_user and current_user.id == reply.user_id
@@ -95,7 +104,7 @@ async def update_comment(comment_id: int,
 
 #сделать получения коммента по айди(с ответами), апдейт коммента(через patch)
 
-@router.post("/comments/{comment_id}")
+@router.delete("/comments/{comment_id}")
 async def delete_comment(comment_id: int,
                          user: User = Depends(get_current_user),
                          db: AsyncSession = Depends(get_db)):
