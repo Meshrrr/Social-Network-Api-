@@ -75,3 +75,16 @@ class Comments(Base):
         "Comments",
         back_populates="parent",
     )
+
+#обновить юзера
+class Follows(Base):
+    __tablename__ = "follows"
+    id = Column(Integer, primary_key=True)
+    follower_id = Column(Integer, ForeignKey("users.id"))
+    following_id = Column(Integer, ForeignKey("users.id"))
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    follower = relationship("User", back_populates="following")
+
+    following = relationship("User", back_populates='followers')
