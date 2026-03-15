@@ -97,6 +97,8 @@ async def update_comment(comment_id: int,
     await db.commit()
     await db.refresh(current_comment)
 
+    current_comment.is_owner = True
+
     return current_comment
 
 
