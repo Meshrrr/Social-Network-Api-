@@ -19,6 +19,9 @@ class UserResponse(BaseModel):
     email: EmailStr | None = None
     is_active: bool = True
     created_at: Optional[datetime] = datetime.now()
+    followers_count: int = 0
+    following_count: int = 0
+    is_followed: bool = False
 
 
 class UserLogin(BaseModel):
@@ -42,3 +45,5 @@ class PasswordUpdate(BaseModel):
     current_password: str = Field(description="Ваш текущий пароль")
     new_password: str = Field(description="Ваш новый пароль", min_length=5, max_length=20)
     confirm_password: str = Field(description="Подтвердите ваш новый пароль", min_length=5, max_length=20)
+
+
