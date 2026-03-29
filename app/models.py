@@ -18,6 +18,14 @@ class User(Base):
     posts = relationship("Post", back_populates="user")
     likes = relationship("Like", back_populates="user")
     comments = relationship("Comments", back_populates="user")
+    following = relationship(
+        "Follow",
+        foreign_keys="Follow.follower_id",
+        back_populates="follower")
+    followers = relationship(
+        "Follow",
+        foreign_keys="Follow.following_id",
+        back_populates="following")
 
 
 class Post(Base):
@@ -76,7 +84,6 @@ class Comments(Base):
         back_populates="parent",
     )
 
-#обновить юзера
 class Follows(Base):
     __tablename__ = "follows"
     id = Column(Integer, primary_key=True)
