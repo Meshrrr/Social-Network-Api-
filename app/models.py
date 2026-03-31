@@ -19,12 +19,12 @@ class User(Base):
     likes = relationship("Like", back_populates="user")
     comments = relationship("Comments", back_populates="user")
     following = relationship(
-        "Follow",
-        foreign_keys="Follow.follower_id",
+        "Follows",
+        foreign_keys="Follows.follower_id",
         back_populates="follower")
     followers = relationship(
-        "Follow",
-        foreign_keys="Follow.following_id",
+        "Follows",
+        foreign_keys="Follows.following_id",
         back_populates="following")
 
 
@@ -92,6 +92,6 @@ class Follows(Base):
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    follower = relationship("User", back_populates="following")
+    follower = relationship("User", foreign_keys=[follower_id], back_populates="following")
 
-    following = relationship("User", back_populates='followers')
+    following = relationship("User", foreign_keys=[following_id], back_populates='followers')
