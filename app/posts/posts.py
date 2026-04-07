@@ -28,10 +28,8 @@ async def create_post(post: PostBase, current_user: User = Depends(get_current_u
 
     return post
 
-#реализовать ленту потом
 @router.get('/feed', response_model=List[PostResponse])
-async def get_feed(current_user: Optional[User] = Depends(get_current_user),
-                   db: AsyncSession = Depends(get_db)):
+async def get_feed(db: AsyncSession = Depends(get_db)):
 
     result_all = await db.execute(select(Post).order_by(Post.created_at.desc()))
 

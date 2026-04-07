@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import  APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException,status
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, func
@@ -12,6 +12,23 @@ from app.schemas.post_schemas import PostResponse
 from app.auth.auth_utils import get_current_user
 
 router = APIRouter(prefix="/feed", tags=["feed"])
+
+@router.get('/', response_model=List[PostResponse])
+async def get_feed(db: AsyncSession = Depends(get_db)):
+
+    result_all = await db.execute(select(Post).order_by(Post.created_at.desc()))
+
+    posts = result_all.scalars().all()
+
+    if not posts:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Посты не найдены")
+
+
+    for post in posts:
+        res = await db.execute(select(User).where(User.id == post.user_id))
+        post.user = res.scalar_one_or_none()
+
+    return posts
 
 @router.get("/following", response_model=List[PostResponse])
 async def get_follow_feed(limit: int = Query(20, ge=1, le=100),
