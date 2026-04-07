@@ -1,12 +1,5 @@
-from fastapi import FastAPI, Depends, HTTPException, status
-import os
-from app.auth.auth_utils import get_current_user
+from fastapi import FastAPI
 from app.database import create_tables
-from app.database import get_db
-from sqlalchemy import select, Select
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.models import User
-from app.schemas.user_schemas import UserResponse
 
 from app.auth.auth_utils import router as auth_router
 from app.users.user_utils import router as users_router
@@ -14,6 +7,7 @@ from app.posts.posts import router as posts_router
 from app.posts.likes_utils import router as likes_router
 from app.posts.comments_utils import router as comments_router
 from app.users.subscribes_utils import router as subscribes_router
+from app.posts.following_feed import router as following_feed
 
 
 app = FastAPI(title="Social API",
@@ -25,6 +19,7 @@ app.include_router(posts_router)
 app.include_router(likes_router)
 app.include_router(comments_router)
 app.include_router(subscribes_router)
+app.include_router(following_feed)
 
 @app.on_event("startup")
 async def on_startup():
