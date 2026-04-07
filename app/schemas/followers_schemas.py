@@ -21,3 +21,9 @@ class FollowActionResponse(BaseModel):
     followers_count: int
     following_count: int
     message: str
+
+class FollowerListResponse(BaseModel):
+    followers: List[FollowUserInfo]
+    total: int
+    page: int
+    page_size: int
