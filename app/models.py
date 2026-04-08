@@ -1,3 +1,5 @@
+from enum import Enum
+
 from sqlalchemy import Integer, Column, String, ForeignKey, DateTime, Text, Boolean, func
 from sqlalchemy.orm import relationship
 
@@ -26,6 +28,8 @@ class User(Base):
         "Follows",
         foreign_keys="Follows.following_id",
         back_populates="following")
+
+    notifications = relationship("Notification", foreign_keys="Notification.user_id", back_populates="user")
 
 
 class Post(Base):
@@ -95,3 +99,38 @@ class Follows(Base):
     follower = relationship("User", foreign_keys=[follower_id], back_populates="following")
 
     following = relationship("User", foreign_keys=[following_id], back_populates='followers')
+
+
+
+class NotificationType(str, Enum):
+    LIKE = "like"
+    COMMENT = "comment"
+    FOLLOW = "follow"
+    REPLY = "reply"
+
+
+
+class Notification(Base):
+    __tablename__ = "Notification"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    user_id = Column(Integer, foreign_key="users.id", index=True)
+
+    actor_id = Column(Integer, foreign_key="users.id", index=True)
+
+    notify_type = Column(Enum(NotificationType))
+
+    object_id = Column(Integer)
+
+    is_read = Column(Boolean, default=False)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", foreign_keys=[user_id], back_populates="notification")
+
+    actor = relationship("User", foreign_keys=[actor_id])
+
+
+
+

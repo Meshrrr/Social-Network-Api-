@@ -1,13 +1,13 @@
 from typing import Optional, List
 from fastapi import APIRouter, Depends, status, HTTPException
-from sqlalchemy import select, Select, func
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.database import get_db
 from app.models import Post, User, Like, Comments
 from app.schemas.post_schemas import PostBase, PostResponse
-from app.auth.auth_utils import get_current_user
+from api.v1.utils.auth.auth_utils import get_current_user
 
 
 router = APIRouter(prefix="/posts", tags=["posts"])

@@ -9,7 +9,7 @@ from sqlalchemy.orm import selectinload
 from app.database import get_db
 from app.models import Post, User, Follows, Like
 from app.schemas.post_schemas import PostResponse
-from app.auth.auth_utils import get_current_user
+from api.v1.utils.auth.auth_utils import get_current_user
 
 router = APIRouter(prefix="/feed", tags=["feed"])
 

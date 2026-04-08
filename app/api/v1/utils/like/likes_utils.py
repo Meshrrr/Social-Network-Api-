@@ -1,15 +1,15 @@
 from typing import List
 
 from fastapi import APIRouter, HTTPException, Depends, status
-from mako.testing.helpers import result_raw_lines
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.schemas.likes_schemas import LikeAction, LikeResponse
-from app.models import User, Post, Like
+from app.models import User, Post, Like, Notification, NotificationType
 from app.database import get_db
-from app.auth.auth_utils import get_current_user
+from app.api.v1.utils.auth.auth_utils import get_current_user
+from app.api.v1.utils.notifications.notification_utils import create_notification, get_unread_count
 
 router = APIRouter(prefix="/posts", tags=["likes"])
 
@@ -17,6 +17,7 @@ router = APIRouter(prefix="/posts", tags=["likes"])
 async def toggle_like(post_id: int,
                       current_user: User = Depends(get_current_user),
                       db: AsyncSession = Depends(get_db)):
+
     result = await db.execute(select(Post).where(Post.id == post_id))
 
     current_post = result.scalar_one_or_none()
@@ -49,6 +50,16 @@ async def toggle_like(post_id: int,
 
     result_all_likes = await db.execute(select(func.count(Like.id)).where(Like.post_id == post_id))
     likes_count = result_all_likes.scalar()
+
+
+    if current_post.post_id != current_user.id:
+        await create_notification(
+            db=db,
+            type=NotificationType.LIKE,
+            user_id= current_post.user_id,
+            actor_id=current_user.id,
+            object_id=post_id
+        )
 
     return LikeAction(
         post_id=post_id,

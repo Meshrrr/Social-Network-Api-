@@ -7,16 +7,18 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models import Post, User, Comments
+from app.models import Post, User, Comments, Notification, NotificationType
 from app.schemas.comments_schemas import CommentsResponse, CommentCreate
-from app.auth.auth_utils import get_current_user
+from api.v1.utils.auth.auth_utils import get_current_user
+from app.api.v1.utils.notifications.notification_utils import create_notification, get_unread_count
+
 
 router = APIRouter(prefix="/posts", tags=["comments"])
 
 @router.post("/{post_id}/comments", response_model=CommentsResponse)
 async def create_comment(content: CommentCreate,
                          post_id: int,
-                         user: User = Depends(get_current_user),
+                         current_user: User = Depends(get_current_user),
                          db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Post).where(Post.id == post_id))
     current_post = result.scalar_one_or_none()
@@ -51,6 +53,15 @@ async def create_comment(content: CommentCreate,
     comment = result.scalar_one()
 
     comment.is_owner = True
+
+    if current_post.user_id != current_user.id:
+        await create_notification(
+            db=db,
+            type=NotificationType.COMMENT,
+            user_id=current_post.user_id,
+            actor_id=current_user.id,
+            object_id=post_id
+        )
 
     return comment
 
