@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 from app.database import create_tables
 
-from api.v1.utils.auth.auth_utils import router as auth_router
-from api.v1.utils.user.user_utils import router as users_router
-from api.v1.utils.post.posts import router as posts_router
-from api.v1.utils.like.likes_utils import router as likes_router
-from api.v1.utils.post.comments_utils import router as comments_router
-from api.v1.utils.follow.subscribes_utils import router as subscribes_router
-from api.v1.utils.follow.following_feed import router as following_feed
+from app.api.v1.utils.auth.auth_utils import router as auth_router
+from app.api.v1.utils.user.user_utils import router as users_router
+from app.api.v1.utils.post.posts import router as posts_router
+from app.api.v1.utils.like.likes_utils import router as likes_router
+from app.api.v1.utils.post.comments_utils import router as comments_router
+from app.api.v1.utils.follow.subscribes_utils import router as subscribes_router
+from app.api.v1.utils.follow.following_feed import router as following_feed
 
 
 app = FastAPI(title="Social API",

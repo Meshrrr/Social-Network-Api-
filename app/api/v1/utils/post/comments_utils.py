@@ -7,9 +7,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models import Post, User, Comments, Notification, NotificationType
+from app.models import Post, User, Comments, NotificationType
 from app.schemas.comments_schemas import CommentsResponse, CommentCreate
-from api.v1.utils.auth.auth_utils import get_current_user
+from app.api.v1.utils.auth.auth_utils import get_current_user
 from app.api.v1.utils.notifications.notification_utils import create_notification, get_unread_count
 
 

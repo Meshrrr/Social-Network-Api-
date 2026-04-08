@@ -9,9 +9,9 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.schemas.followers_schemas import FollowUserInfo, FollowActionResponse, FollowerListResponse
-from app.models import Follows, User, Notification, NotificationType
-from api.v1.utils.auth.auth_utils import get_current_user
-from app.api.v1.utils.notifications.notification_utils import create_notification, get_unread_count
+from app.models import Follows, User, NotificationType
+from app.api.v1.utils.auth.auth_utils import get_current_user
+from app.api.v1.utils.notifications.notification_utils import create_notification
 
 
 router = APIRouter(prefix="/users", tags=["follows"])
@@ -65,7 +65,7 @@ async def follow_toggle(user_id: int, current_user: User = Depends(get_current_u
             type=NotificationType.FOLLOW,
             user_id=user_id,
             actor_id=current_user.id
-        )s
+        )
 
     return FollowActionResponse(is_following=is_following,
                                 user_id=user_id,

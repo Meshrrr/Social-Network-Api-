@@ -3,7 +3,7 @@ from sqlalchemy import select, Select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import User
 from app.schemas .user_schemas import UserResponse,UserUpdate, PasswordUpdate
-from api.v1.utils.auth.auth_utils import get_current_user, hash_password, valid_password
+from app.api.v1.utils.auth.auth_utils import get_current_user, hash_password, valid_password
 from app.database import get_db
 
 router = APIRouter(prefix="/users", tags=["users"])

@@ -7,7 +7,7 @@ from sqlalchemy.orm import joinedload
 from app.database import get_db
 from app.models import Post, User, Like, Comments
 from app.schemas.post_schemas import PostBase, PostResponse
-from api.v1.utils.auth.auth_utils import get_current_user
+from app.api.v1.utils.auth.auth_utils import get_current_user
 
 
 router = APIRouter(prefix="/posts", tags=["posts"])

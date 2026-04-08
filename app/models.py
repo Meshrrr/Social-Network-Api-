@@ -1,5 +1,5 @@
 from enum import Enum
-
+from sqlalchemy import Enum as sql_enum
 from sqlalchemy import Integer, Column, String, ForeignKey, DateTime, Text, Boolean, func
 from sqlalchemy.orm import relationship
 
@@ -29,7 +29,7 @@ class User(Base):
         foreign_keys="Follows.following_id",
         back_populates="following")
 
-    notifications = relationship("Notification", foreign_keys="Notification.user_id", back_populates="user")
+    notifications = relationship("notification", foreign_keys="notification.user_id", back_populates="user")
 
 
 class Post(Base):
@@ -102,7 +102,7 @@ class Follows(Base):
 
 
 
-class NotificationType(str, Enum):
+class NotificationType(Enum):
     LIKE = "like"
     COMMENT = "comment"
     FOLLOW = "follow"
@@ -111,7 +111,7 @@ class NotificationType(str, Enum):
 
 
 class Notification(Base):
-    __tablename__ = "Notification"
+    __tablename__ = "nsotification"
 
     id = Column(Integer, primary_key=True, index=True)
 
@@ -119,7 +119,7 @@ class Notification(Base):
 
     actor_id = Column(Integer, foreign_key="users.id", index=True)
 
-    notify_type = Column(Enum(NotificationType))
+    notify_type = Column(sql_enum(NotificationType))
 
     object_id = Column(Integer)
 
