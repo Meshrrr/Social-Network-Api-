@@ -22,26 +22,11 @@ async def test_like_create(client, db_session):
     #Arrange
 
     user = await create_test_user(password="123123", username="test", email="example@test.ru")
-    # hashed_pwd = hash_password("123123")
-    #
-    # user = User(
-    #     username="test",
-    #     email="example@test.ru",
-    #     hashed_password=hashed_pwd,
-    # )
+
     db_session.add(user)
     await db_session.flush()
 
     user2 = await create_test_user(password="123123123", username="test2", email="exampl@test.ru")
-
-
-    # hashed_pwd2 = hash_password("123123123")
-    #
-    # user2 = User(
-    #     username="test2",
-    #     email="exampl@test.ru",
-    #     hashed_password=hashed_pwd2,
-    # )
 
     db_session.add(user2)
     await db_session.flush()
@@ -107,6 +92,9 @@ async def test_like_create(client, db_session):
     )
     post_result = result.scalar_one()
 
+    get_post = client.get(f"/api/v1/posts/{post.id}",
+                          headers={"Authorization": f"Bearer {access_token_user1}"})
+
 
     #Assert
 
@@ -119,8 +107,6 @@ async def test_like_create(client, db_session):
     assert response3.status_code == 200
     assert response3.json()["post_id"] == post.id
 
-    get_post = client.get(f"/api/v1/posts/{post.id}",
-                          headers={"Authorization": f"Bearer {access_token_user1}"})
 
     assert get_post.status_code == 200
     assert get_post.json()["likes_count"] == len(post_result.likes)
