@@ -52,7 +52,7 @@ async def toggle_like(post_id: int,
     likes_count = result_all_likes.scalar()
 
 
-    if current_post.post_id != current_user.id:
+    if current_post.user_id != current_user.id:
         await create_notification(
             db=db,
             type=NotificationType.LIKE,

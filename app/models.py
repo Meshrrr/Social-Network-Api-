@@ -29,7 +29,7 @@ class User(Base):
         foreign_keys="Follows.following_id",
         back_populates="following")
 
-    notifications = relationship("notification", foreign_keys="notification.user_id", back_populates="user")
+    notifications = relationship("Notification", foreign_keys="Notification.user_id", back_populates="user")
 
 
 class Post(Base):
@@ -111,13 +111,13 @@ class NotificationType(Enum):
 
 
 class Notification(Base):
-    __tablename__ = "nsotification"
+    __tablename__ = "notification"
 
     id = Column(Integer, primary_key=True, index=True)
 
-    user_id = Column(Integer, foreign_key="users.id", index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
 
-    actor_id = Column(Integer, foreign_key="users.id", index=True)
+    actor_id = Column(Integer, ForeignKey("users.id"), index=True)
 
     notify_type = Column(sql_enum(NotificationType))
 
@@ -127,10 +127,6 @@ class Notification(Base):
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    user = relationship("User", foreign_keys=[user_id], back_populates="notification")
+    user = relationship("User", foreign_keys=[user_id], back_populates="notifications")
 
     actor = relationship("User", foreign_keys=[actor_id])
-
-
-
-
